@@ -1,23 +1,112 @@
-import logo from './logo.svg';
 import './App.css';
+import React, { useState, useEffect } from "react";
+import  { Amplify } from 'aws-amplify';
+import { generateClient } from "aws-amplify/api";
+import awsconfig from './aws-exports';
+import { getWord, listWords } from './graphql/queries'
+import Cross from './cross.svg';
+import Check from './check.svg';
+
+Amplify.configure(awsconfig);
+const client = generateClient();
+let nextId = 0;
 
 function App() {
+  const [mainWord, setMainWord] = useState("");
+  const [message, setMessage] = useState("");
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState("");
+  const [won, setWon] = useState(false);
+
+    useEffect(() => {
+        fetchWords();
+    }, []);
+    
+    const fetchWords = async () => {
+        try {
+            const wordsData = await client.graphql({ query: listWords});
+            const wordList = wordsData.data.listWords.items;
+            const wordnum = Math.floor(Math.random() * wordList.length);
+            const wordData = await client.graphql({ query:getWord, variables: {id: wordnum} });
+
+            var msgString = "Describe the word " + wordData.data.getWord['mainWord'] + " without using the words " + wordData.data.getWord['mainWord'] + ", " + wordData.data.getWord['complement1']
+            if (wordData.data.getWord['complement2']) {
+                msgString = msgString.concat(", " + wordData.data.getWord['complement2']);
+            }
+            if (wordData.data.getWord['complement3']) {
+                msgString = msgString.concat(", " + wordData.data.getWord['complement3']);
+            }
+            if (wordData.data.getWord['complement4']) {
+                msgString = msgString.concat(", " + wordData.data.getWord['complement4']);
+            }
+            if (wordData.data.getWord['complement5']) {
+                msgString = msgString.concat(", and " + wordData.data.getWord['complement5']);
+            }
+            msgString = msgString.concat(" in 20 words or less");
+
+            setMainWord(wordData.data.getWord['mainWord']);
+            setMessage(msgString);
+        } catch (err) {
+            console.log('Error fetching words: ', err);
+        }
+    }
+
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      var regex = /^[a-zA-Z]+$/;
+      if (newItem.trim() == mainWord) {
+        setWon(true);
+      }
+      if (regex.test(newItem.trim()) && newItem.trim() != mainWord && !items.includes(newItem.trim())) {
+        setNewItem("")
+        setItems([newItem.trim(), ...items]);
+      }
+    };
+  
+    const handleChange = (event) => {
+      setNewItem(event.target.value);
+    };
+
+    const handleReplay = (event) => {
+      window.location.reload();
+    }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='container d-flex flex-column align-items-center pt-5'>
+      <h1 className='text-white'>Definitiondle</h1>
+      <div className='border border-white p-3 w-50 text-white'>{message}</div>
+
+      {won ?
+        <div className='d-flex flex-column align-items-center'><h2 className='text-white mt-3'>
+          You win! The word was {mainWord}!
+        </h2>
+        <button onClick={handleReplay} className='btn btn-light w-25'>Replay?</button></div>
+        :
+      <div className='w-50'>
+
+      <form className='text-white w-100 mt-5' onSubmit={handleSubmit}>
+        <label className='form-group w-75 pe-2'>
+          Guess the word:
+          <input type="text" className="form-control w-100" value={newItem} onChange={handleChange} />
+        </label>
+        <input type="submit" value="submit" className='btn btn-light w-25'  />
+      </form>
+</div>
+      }
+      <ul className='text-white w-50 mt-5 list-unstyled text-break'>
+        {won && <li  key={mainWord} className='border border-white p-2 d-flex justify-content-between'>
+            <div>{mainWord}</div>
+          <img src={Check} style={{width:20}} alt="Check mark"/>
+          </li>}
+        {items.map((i) => {
+          return <li  key={i} className='border border-white p-2 d-flex justify-content-between'>
+            <div>{i}</div>
+          <img src={Cross} style={{width:20}} alt="Cross mark"/>
+          </li>;
+        })}
+        
+      </ul>
+      
     </div>
   );
 }
