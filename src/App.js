@@ -6,10 +6,19 @@ import awsconfig from './aws-exports';
 import { getWord, listWords } from './graphql/queries'
 import Cross from './cross.svg';
 import Check from './check.svg';
+import OpenAI from "openai";
+
+
+const openai = new OpenAI({
+  apiKey: process.env.REACT_APP_OPENAI_API_KEY, dangerouslyAllowBrowser: true 
+});
+
+
+
+
 
 Amplify.configure(awsconfig);
 const client = generateClient();
-let nextId = 0;
 
 function App() {
   const [mainWord, setMainWord] = useState("");
@@ -17,9 +26,19 @@ function App() {
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
   const [won, setWon] = useState(false);
+  const [prompt, setPrompt] = useState("");
+
+  function getPrompt(msg) {
+    openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: msg}]
+    }).then(res => {
+        setPrompt(res.choices[0].message.content)
+    })
+  }
 
     useEffect(() => {
-        fetchWords();
+        fetchWords().then((value) => {getPrompt(value)});
     }, []);
     
     const fetchWords = async () => {
@@ -46,6 +65,7 @@ function App() {
 
             setMainWord(wordData.data.getWord['mainWord']);
             setMessage(msgString);
+            return msgString;
         } catch (err) {
             console.log('Error fetching words: ', err);
         }
@@ -54,12 +74,13 @@ function App() {
     const handleSubmit = (event) => {
       event.preventDefault();
       var regex = /^[a-zA-Z]+$/;
-      if (newItem.trim() == mainWord) {
+      if (newItem.trim().toLowerCase() == mainWord) {
         setWon(true);
       }
-      if (regex.test(newItem.trim()) && newItem.trim() != mainWord && !items.includes(newItem.trim())) {
-        setNewItem("")
-        setItems([newItem.trim(), ...items]);
+      if (regex.test(newItem.trim()) && newItem.trim().toLowerCase() != mainWord && !items.includes(newItem.trim().toLowerCase())) {
+        getPrompt(message);
+        setNewItem("");
+        setItems([newItem.trim().toLowerCase(), ...items]);
       }
     };
   
@@ -74,7 +95,8 @@ function App() {
   return (
     <div className='container d-flex flex-column align-items-center pt-5'>
       <h1 className='text-white'>Definitiondle</h1>
-      <div className='border border-white p-3 w-50 text-white'>{message}</div>
+      <p className='text-white text-center'>The AI will describe a word for you. You must guess the word. The AI will try again after each guess, so give it some time!</p>
+      <div className='border border-white p-3 w-50 text-white'>{prompt}</div>
 
       {won ?
         <div className='d-flex flex-column align-items-center'><h2 className='text-white mt-3'>
