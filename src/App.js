@@ -74,10 +74,10 @@ function App() {
     const handleSubmit = (event) => {
       event.preventDefault();
       var regex = /^[a-zA-Z]+$/;
-      if (newItem.trim().toLowerCase() == mainWord) {
+      if (newItem.trim().toLowerCase() === mainWord) {
         setWon(true);
       }
-      if (regex.test(newItem.trim()) && newItem.trim().toLowerCase() != mainWord && !items.includes(newItem.trim().toLowerCase())) {
+      if (regex.test(newItem.trim()) && newItem.trim().toLowerCase() !== mainWord && !items.includes(newItem.trim().toLowerCase())) {
         getPrompt(message);
         setNewItem("");
         setItems([newItem.trim().toLowerCase(), ...items]);
