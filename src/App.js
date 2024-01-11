@@ -94,7 +94,7 @@ function App() {
 
   return (
     <div className='container d-flex flex-column align-items-center pt-5'>
-      <h1 className='text-white'>Definitiondle</h1>
+      <h1 className='text-white'>Definition Game</h1>
       <p className='text-white text-center'>The AI will describe a word for you. You must guess the word. The AI will try again after each guess, so give it some time!</p>
       <div className='border border-white p-3 w-50 text-white'>{prompt}</div>
 
