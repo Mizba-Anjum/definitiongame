@@ -2,7 +2,7 @@
 # all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
 input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
 
-type Word @model {
+type Word @model @auth(rules: [{allow: public}]){
   id: ID!
   mainWord: String!
   complement1: String!
