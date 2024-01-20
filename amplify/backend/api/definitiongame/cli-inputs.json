@@ -4,7 +4,10 @@
     "apiName": "definitiongame",
     "serviceName": "AppSync",
     "defaultAuthType": {
-      "mode": "AWS_IAM"
+      "mode": "API_KEY",
+      "expirationTime": 300,
+      "apiKeyExpirationDate": "2024-11-15T23:08:41.186Z",
+      "keyDescription": "apikeydefgame"
     },
     "conflictResolution": {},
     "additionalAuthTypes": []

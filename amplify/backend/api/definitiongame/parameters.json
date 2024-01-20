@@ -1,5 +1,6 @@
 {
   "AppSyncApiName": "definitiongame",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
-  "DynamoDBEnableServerSideEncryption": false
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthModeLastUpdated": "2024-01-20T23:08:44.988Z"
 }
